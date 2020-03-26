@@ -46,6 +46,7 @@ AUTHENTICATION_BACKENDS = [
     'social_core.backends.github.GithubOAuth2',
     'social_core.backends.google.GoogleOAuth2',
     'django.contrib.auth.backends.ModelBackend',
+    #'blog.authentication.EmailAuthbackend   ',
 ]
 
 MIDDLEWARE = [
@@ -137,3 +138,10 @@ STATICFILRS_DIRS = (
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_URL = '/media/'
 MEDIA_ROOT =  os.path.join(BASE_DIR, 'media')
+
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '869844426036-vjl415b3o4hm5305v543b1aeq7q95h4f.apps.googleusercontent.com'
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = 'DmSelpanAQsJKDfVjWVsz_8p'
+
+SOCIAL_AUTH_GITHUB_KEY = 'f5a8de1a1a5db768c541'
+SOCIAL_AUTH_GITHUB_SECRET = '6f56a31fdd998dcd8af24a487f4500027f5795e9'

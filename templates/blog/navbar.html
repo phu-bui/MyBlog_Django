@@ -13,7 +13,9 @@
     </ul>
     <ul class="navbar-nav">
         {% if request.user.is_authenticated %}
-
+        <li class="nav-item dropdoen">
+            <a class="dropdown-item" href="{% url 'post_create' %}">Post create</a>
+        </li>
         <li class="nav-item dropdown">
             <a class="dropdown-item" href="{% url 'edit_profile' %}">Hi {{ request.user|capfirst }}</a>
             <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>

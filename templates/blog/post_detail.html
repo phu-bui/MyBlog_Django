@@ -6,4 +6,14 @@
     <small>Post created by : {{post.author}}</small>
     <p>{{post.body}}</p>
 </div>
+<div class="row gallery">
+    {% for p in post.images_set.all %}
+        <div class="col-md-3">
+            <img src="{{ p.image.url }}" alt="Image Not Found" class="img-thumbnail">
+        </div>
+    {% endfor %}
+</div>
+<div id="like-section">
+    {% include 'blog/like_section.html' %}
+</div>
 {% endblock %}

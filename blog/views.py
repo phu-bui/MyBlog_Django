@@ -1,13 +1,14 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.core.paginator import PageNotAnInteger, EmptyPage, Paginator
-# Create your views here.
-from .models import *
 from .forms import *
+from .models import *
+from django.forms import modelformset_factory
+from django.template.loader import render_to_string
 
 def post_list(request):
     posts_list = Post.objects.all().order_by('-id')
@@ -50,24 +51,52 @@ def proper_pagination(posts, index):
 
 
 def post_detail(request, pk):
-    post = Post.objects.get(id=pk)
+    post = get_object_or_404(Post, id=pk)
+    is_liked = False
+    if post.likes.filter(id = request.user.id).exists():
+        is_liked = True
     context = {
         'post':post,
+        'is_liked': is_liked,
+        'total_likes': post.total_likes(),
     }
     return render(request, 'blog/post_detail.html', context)
 
+def like_post(request):
+    post = get_object_or_404(Post, id = request.POST.get('post_id'))
+    is_liked = False
+    if post.likes.filter(id=request.user.id).exists():
+        post.likes.remove(request.user)
+        is_liked = False
+    else:
+        post.likes.add(request.user)
+        is_liked = True
+    return HttpResponseRedirect(post.get_absolute_url())
+
+
 def post_create(request):
+    ImageFormset = modelformset_factory(Images, fields=('image',), extra=4)
     if request.method == 'POST':
         form = PostCreateForm(request.POST)
-        if form.is_valid():
+        formset = ImageFormset(request.POST or None, request.FILES or None)
+        if form.is_valid() and formset.is_valid():
             post = form.save(commit=False)
             post.author = request.user
             post.save()
+            for f in formset:
+                try:
+                    photo = Images(post=post, image=f.cleaned_data['image'])
+                    photo.save()
+                    #   return redirect('post_list')
+                except Exception as e:
+                    break
+            return redirect('post_list')
     else:
         form = PostCreateForm()
-    form = PostCreateForm()
+        formset = ImageFormset(queryset = Images.objects.none())
     context = {
         'form': form,
+        'formset': formset,
     }
     return render(request, 'blog/post_create.html', context)
 

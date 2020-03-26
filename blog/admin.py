@@ -14,6 +14,9 @@ class PostAdmin(admin.ModelAdmin):
 class ProfileAdmin(admin.ModelAdmin):
     list_display = ('user', 'dob', 'photo')
 
+class ImagesAdmin(admin.ModelAdmin):
+    list_display = ('post', 'images')
 
 admin.site.register(Post, PostAdmin)
 admin.site.register(Profile, ProfileAdmin)
+admin.site.register(Images, ImagesAdmin)
