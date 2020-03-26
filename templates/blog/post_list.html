@@ -1,6 +1,8 @@
 {% extends 'blog/base.html' %}
 {% block title %}Welcom to {{block.super}}{% endblock %}
 {% block content %}
+{% include 'blog/alerts.html' %}
+
 <div class="row">
     {% for p in posts %}
     <div class="col-md-6">

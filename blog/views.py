@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
@@ -8,6 +8,7 @@ from django.core.paginator import PageNotAnInteger, EmptyPage, Paginator
 from .forms import *
 from .models import *
 from django.forms import modelformset_factory
+from django.contrib import messages
 from django.template.loader import render_to_string
 
 def post_list(request):
@@ -52,13 +53,31 @@ def proper_pagination(posts, index):
 
 def post_detail(request, pk):
     post = get_object_or_404(Post, id=pk)
+    comments = Comment.objects.filter(post=post).order_by('-id')
     is_liked = False
     if post.likes.filter(id = request.user.id).exists():
         is_liked = True
+    if request.method == "POST":
+        comment_form = CommentForm(request.POST or None)
+        if comment_form.is_valid():
+            content = request.POST.get('content')
+            reply_id = request.POST.get('comment_id')
+            comment_qs = None
+            if reply_id:
+                comment_qs = Comment.objects.get(id = reply_id)
+
+            comment = Comment.objects.create(post=post, user = request.user, content=content, reply = comment_qs)
+            comment.save()
+            return HttpResponseRedirect(post.get_absolute_url())
+    else:
+        comment_form = CommentForm()
+
     context = {
         'post':post,
         'is_liked': is_liked,
         'total_likes': post.total_likes(),
+        'comments': comments,
+        'comment_form': comment_form,
     }
     return render(request, 'blog/post_detail.html', context)
 
@@ -75,7 +94,7 @@ def like_post(request):
 
 
 def post_create(request):
-    ImageFormset = modelformset_factory(Images, fields=('image',), extra=4)
+    ImageFormset = modelformset_factory(Images, fields=('image',), extra=4, max_num=4)
     if request.method == 'POST':
         form = PostCreateForm(request.POST)
         formset = ImageFormset(request.POST or None, request.FILES or None)
@@ -90,6 +109,7 @@ def post_create(request):
                     #   return redirect('post_list')
                 except Exception as e:
                     break
+            messages.success(request, "Post has been successfully created.")
             return redirect('post_list')
     else:
         form = PostCreateForm()
@@ -99,6 +119,52 @@ def post_create(request):
         'formset': formset,
     }
     return render(request, 'blog/post_create.html', context)
+
+def post_edit(request, pk):
+    post = get_object_or_404(Post, id=pk)
+    ImageFormset = modelformset_factory(Images, fields=('image',), extra=4)
+
+    if post.author != request.user:
+        raise Http404()
+    if request.method == "POST":
+        form = PostEditForm(request.POST or None, instance=post)
+        formset = ImageFormset(request.POST or None, request.FILES or None)
+        if form.is_valid() and formset.is_valid():
+            form.save()
+            print(formset.cleaned_data)
+            data = Images.objects.filter(post=post)
+            for index, f in enumerate(formset):
+                if f.cleaned_data:
+                    if f.cleaned_data['id'] is None:
+                        photo = Images(post=post, image=f.cleaned_data.get('image'))
+                        photo.save()
+                    elif f.cleaned_data['image'] is False:
+                        photo = Images.objects.get(id = request.POST.get('form-' + str(index) + '-id'))
+                        photo.delete()
+                    else:
+                        photo = Images(post=post, image=f.cleaned_data.get('image'))
+                        d = Images.objects.get(id=data[index].id)
+                        d.image = photo.image
+                        d.save()
+            messages.success(request, "{} has been successfull updated!".format(post.title))
+            return HttpResponseRedirect(post.get_absolute_url())
+    else:
+        form = PostEditForm(instance=post)
+        formset = ImageFormset(queryset = Images.objects.filter(post=post))
+    context = {
+        'form': form,
+        'post': post,
+        'formset': formset,
+    }
+    return render(request, 'blog/post_edit.html', context)
+
+def post_delete(request, pk):
+    post = get_object_or_404(Post, id = pk)
+    if request.user !=post.author:
+        raise Http404()
+    post.delete()
+    messages.warning(request, 'post has been successfully deleted!')
+    return redirect('post_list')
 
 def user_login(request):
     if request.method == "POST":

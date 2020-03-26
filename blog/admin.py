@@ -15,8 +15,9 @@ class ProfileAdmin(admin.ModelAdmin):
     list_display = ('user', 'dob', 'photo')
 
 class ImagesAdmin(admin.ModelAdmin):
-    list_display = ('post', 'images')
+    list_display = ('post', 'image')
 
 admin.site.register(Post, PostAdmin)
 admin.site.register(Profile, ProfileAdmin)
 admin.site.register(Images, ImagesAdmin)
+admin.site.register(Comment)
