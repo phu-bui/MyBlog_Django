@@ -1,0 +1,21 @@
+{% extends 'blog/base.html' %}
+{% block title %}Favourite{% endblock %}
+{% block content %}
+<div class="row">
+    {% for p in favourite_posts %}
+    <div class="col-md-6">
+        <div class="img-thumbnail">
+            <a href="{% url 'post_detail' p.id %}" >{{p.title}}</a><small style="float:right">{{p.created}}</small><br/>
+            Author : {{p.author}}<br>
+            {{p.body}}
+        <br/>
+
+        </div>
+    </div>
+    {% empty %}
+    <div class="container-fluid">
+        <h3>No Posts Found having search query "{{ request.GET.q }}"</h3>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

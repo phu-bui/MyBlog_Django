@@ -18,6 +18,7 @@
 <div id="like-section">
     {% include 'blog/like_section.html' %}
 </div>
+
 {% if post.author == request.user %}
 <div class="section-1" style="float:right;">
     <a href="{% url 'post_edit' post.id %}">
@@ -31,44 +32,11 @@
 
 <br>
 
-
-<div class="main-comment-section">
-    <div class="container-fluid mt-2">
-        <div class="form-group row">
-            <form method="post">
-                {% csrf_token %}
-                {{ comment_form.as_p }}
-                {% if request.user.is_authenticated %}
-                    <input type="submit" value="Submit" class="btn btn-outline-success">
-                {% else %}
-                    <input type="submit" value="Submit" class="btn btn-outline-success" disabled>
-                {% endif %}
-            </form>
-        </div>
+{% if not post.restrict_comment %}
+    <div class="main-comment-section">
+        {% include 'blog/comments.html' %}
     </div>
-
-    {{ comments.count }}Comment{{ comments|pluralize }}
-    {% for comment in comments %}
-        <blockquote class="blockquote">
-        <p class="mb-0">{{ comment.content }}</p>
-        <footer class="blockquote-footer">by <cite title="Source Title">{{ comment.user|capfirst }}</cite></footer>
-</blockquote>
-    <div class="replied-comments container md-2">
-        <div class="form-group row">
-            <form method="post">
-                {% csrf_token %}
-                <input type="hidden" name="comment_id" value="{{ comment.id }}">
-                {{ comment_form.as_p }}
-                {% if request.user.is_authenticated %}
-                    <input type="submit" value="Submit" class="btn btn-outline-success">
-                {% else %}
-                    <input type="submit" value="Submit" class="btn btn-outline-success" disabled>
-                {% endif %}
-            </form>
-        </div>
-    </div>
-    {% endfor %}
-</div>
+{% endif %}
 {% endblock %}
 
 

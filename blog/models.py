@@ -23,6 +23,8 @@ class Post(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft')
+    restrict_comment = models.BooleanField(default=False)
+    favourite = models.ManyToManyField(User, related_name='favourite', blank=True)
 
     #class Meta:
     #        ordering = ['-id']
