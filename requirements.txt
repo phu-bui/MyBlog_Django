@@ -1,6 +1,6 @@
 app==0.0.1
 asgiref==3.2.4
-Babel==2.8.0
+Babel==2.9.1
 certifi==2019.11.28
 chardet==3.0.4
 Click==7.0
